@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NexGen AI School Merch - Indian Store</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Three.js for 3D Graphics -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <!-- Tailwind Configuration -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            dark: '#0b0f19',
+                            card: '#151c2e',
+                            light: '#1e293b',
+                            accent: '#06b6d4', // Cyan
+                            purple: '#a855f7', // Purple
+                            amazon: '#ff9900', // Amazon Orange
+                            success: '#10b981'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Custom Styling & Animations -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            background-color: #0b0f19;
+            color: #f8fafc;
+            overflow-x: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(21, 28, 46, 0.75);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: linear-gradient(145deg, rgba(21, 28, 46, 0.9), rgba(11, 15, 25, 0.95));
+            border: 1px solid rgba(6, 182, 212, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        /* 3D Card Hover Effect */
+        .card-3d {
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .card-3d:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 30px -10px rgba(6, 182, 212, 0.3);
+            border-color: rgba(6, 182, 212, 0.6);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0b0f19; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #06b6d4; }
+
+        /* Horizontal Slider Hide Scrollbar */
+        .slider-container {
+            scroll-snap-type: x mandatory;
+            scrollbar-width: none;
+        }
+        .slider-container::-webkit-scrollbar { display: none; }
+        .slider-item { scroll-snap-align: start; }
+
+        /* Animated Gradient Text */
+        .text-gradient {
+            background: linear-gradient(to right, #06b6d4, #a855f7, #ff9900);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            background-size: 200% auto;
+            animation: shine 4s linear infinite;
+        }
+        @keyframes shine {
+            to { background-position: 200% center; }
+        }
+
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        /* Sidebar & Modals Transition */
+        .cart-open { transform: translateX(0%); }
+        .cart-closed { transform: translateX(100%); }
+
+        /* Toast Notification */
+        .toast {
+            transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            opacity: 0;
+            transform: translate(-50%, 20px);
+            pointer-events: none;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+<body class="antialiased relative min-h-screen flex flex-col">
+
+    <!-- 3D Canvas Background -->
+    <div id="bg-canvas"></div>
+
+    <!-- Navigation Bar -->
+    <nav class="fixed w-full z-40 glass transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20 gap-4">
+                
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center gap-3 cursor-pointer" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-accent via-brand-purple to-brand-amazon flex items-center justify-center shadow-[0_0_15px_rgba(6,182,212,0.5)]">
+                        <i class="fa-solid fa-graduation-cap text-white text-xl"></i>
+                    </div>
+                    <span class="font-extrabold text-2xl tracking-tight text-white">Nex<span class="text-gradient">Gen</span> Merch</span>
+                </div>
+
+                <!-- Live Search Bar -->
+                <div class="hidden md:flex flex-1 max-w-lg relative group">
+                    <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none">
+                        <i class="fa-solid fa-magnifying-glass text-slate-400 group-focus-within:text-brand-accent"></i>
+                    </div>
+                    <input type="text" id="search-input" onkeyup="handleSearch()" class="block w-full pl-10 pr-10 py-2.5 border border-slate-700/80 rounded-full leading-5 bg-slate-900/80 text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-accent sm:text-sm transition-all shadow-inner" placeholder="Search hoodies, caps, geometry boxes, notebooks...">
+                    <button id="clear-search" onclick="clearSearch()" class="absolute inset-y-0 right-3 hidden items-center text-slate-400 hover:text-white">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+
+                <!-- Cart & Actions -->
+                <div class="flex items-center gap-5">
+                    <button onclick="toggleWishlistModal()" class="relative p-2 text-slate-300 hover:text-brand-purple transition-colors">
+                        <i class="fa-regular fa-heart text-2xl"></i>
+                        <span id="wishlist-count" class="absolute -top-1 -right-1 bg-brand-purple text-white text-[10px] font-bold w-5 h-5 rounded-full flex items-center justify-center">0</span>
+                    </button>
+
+                    <button id="cart-btn" onclick="toggleCart()" class="relative p-2.5 bg-slate-800/80 border border-slate-700 rounded-xl text-slate-200 hover:text-white hover:border-brand-accent transition-all flex items-center gap-2 group">
+                        <div class="relative">
+                            <i class="fa-solid fa-cart-shopping text-lg group-hover:scale-110 transition-transform"></i>
+                            <span id="cart-count" class="absolute -top-3 -right-3 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-brand-accent rounded-full shadow-[0_0_10px_rgba(6,182,212,0.8)]">0</span>
+                        </div>
+                        <span class="hidden sm:inline font-semibold text-sm" id="nav-cart-total">₹0</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Mobile Search Bar -->
+            <div class="pb-3 md:hidden">
+                <input type="text" id="mobile-search-input" onkeyup="handleMobileSearch()" class="w-full px-4 py-2 border border-slate-700 rounded-lg bg-slate-900/90 text-sm text-white placeholder-slate-400" placeholder="Search school items...">
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <main class="flex-grow pt-24">
+        <section class="relative min-h-[70vh] flex items-center justify-center overflow-hidden py-12 px-4">
+            <div class="text-center z-10 max-w-4xl mx-auto">
+                <div class="inline-flex items-center gap-2 mb-6 px-4 py-1.5 rounded-full border border-brand-accent/40 bg-brand-accent/10 backdrop-blur-md text-brand-accent text-xs sm:text-sm font-semibold uppercase tracking-wider shadow-[0_0_20px_rgba(6,182,212,0.2)]">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> Official AI Campus Store &bull; Fast Delivery across India
+                </div>
+                
+                <h1 class="text-4xl sm:text-6xl md:text-7xl font-extrabold mb-6 leading-tight tracking-tight">
+                    Smart Gear for <br>
+                    <span class="text-gradient">Next-Gen Students</span>
+                </h1>
+                
+                <p class="text-base sm:text-lg md:text-xl text-slate-300 mb-8 max-w-2xl mx-auto font-light leading-relaxed">
+                    Premium hoodies, tech stationery, smart backpacks, and custom school apparel with 3D preview and instant Amazon-style fast checkout.
+                </p>
+
+                <div class="flex flex-wrap gap-4 justify-center items-center">
+                    <a href="#products-section" class="px-8 py-3.5 bg-gradient-to-r from-brand-accent to-brand-purple text-white font-bold rounded-xl shadow-[0_0_25px_rgba(6,182,212,0.4)] hover:shadow-[0_0_35px_rgba(168,85,247,0.6)] hover:scale-105 active:scale-95 transition-all">
+                        <i class="fa-solid fa-bag-shopping mr-2"></i> Shop Collection
+                    </a>
+                    <a href="#ai-picks" class="px-8 py-3.5 glass text-white font-bold rounded-xl border border-slate-700 hover:border-brand-accent hover:text-brand-accent transition-all hover:scale-105">
+                        <i class="fa-solid fa-fire mr-2 text-brand-amazon"></i> Trending Items
+                    </a>
+                </div>
+
+                <!-- Quick Highlights Row -->
+                <div class="mt-12 grid grid-cols-2 md:grid-cols-4 gap-4 max-w-3xl mx-auto pt-8 border-t border-slate-800/80 text-left sm:text-center">
+                    <div class="p-3">
+                        <div class="text-brand-accent font-bold text-xl sm:text-2xl">FREE ₹0</div>
+                        <div class="text-slate-400 text-xs">Shipping over ₹999</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-brand-purple font-bold text-xl sm:text-2xl">4.8 ★</div>
+                        <div class="text-slate-400 text-xs">10k+ Student Reviews</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-brand-amazon font-bold text-xl sm:text-2xl">100%</div>
+                        <div class="text-slate-400 text-xs">Authentic School Merch</div>
+                    </div>
+                    <div class="p-3">
+                        <div class="text-brand-success font-bold text-xl sm:text-2xl">UPI / COD</div>
+                        <div class="text-slate-400 text-xs">Easy Payment Options</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured AI Picks Slider Section -->
+        <section id="ai-picks" class="py-12 relative border-t border-slate-800/60 bg-slate-900/30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-end justify-between mb-6">
+                    <div>
+                        <div class="text-xs font-bold text-brand-accent tracking-widest uppercase mb-1">Algorithmic Recommendations</div>
+                        <h2 class="text-2xl sm:text-3xl font-extrabold flex items-center gap-2">
+                            <i class="fa-solid fa-bolt text-brand-amazon"></i> AI Top Rated Picks
+                        </h2>
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="slide-left" onclick="scrollSlider(-320)" class="w-10 h-10 rounded-xl glass flex items-center justify-center hover:border-brand-accent hover:text-brand-accent transition-colors">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button id="slide-right" onclick="scrollSlider(320)" class="w-10 h-10 rounded-xl glass flex items-center justify-center hover:border-brand-accent hover:text-brand-accent transition-colors">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Slider Container -->
+                <div class="slider-container flex gap-6 overflow-x-auto pb-6 pt-2 px-1" id="featured-slider">
+                    <!-- Dynamic Slider Cards Injected Here -->
+                </div>
+            </div>
+        </section>
+
+        <!-- Main Inventory & Filter Section -->
+        <section id="products-section" class="py-16">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                
+                <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6 mb-10">
+                    <div>
+                        <h2 class="text-3xl font-extrabold text-white">School Merch Catalog</h2>
+                        <p class="text-slate-400 text-sm mt-1">Explore all categories with real customer reviews & 3D inspection.</p>
+                    </div>
+                    
+                    <!-- Category Filters -->
+                    <div class="flex items-center gap-2 overflow-x-auto pb-2 lg:pb-0 scrollbar-none" id="category-filters">
+                        <button onclick="filterCategory('all', this)" class="filter-btn active px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold glass border-brand-accent text-brand-accent whitespace-nowrap">All Items</button>
+                        <button onclick="filterCategory('hoodies', this)" class="filter-btn px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold glass text-slate-300 hover:border-brand-accent hover:text-white transition-all whitespace-nowrap"><i class="fa-solid fa-shirt mr-1.5"></i> Hoodies</button>
+                        <button onclick="filterCategory('clothes', this)" class="filter-btn px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold glass text-slate-300 hover:border-brand-accent hover:text-white transition-all whitespace-nowrap"><i class="fa-solid fa-user-ninja mr-1.5"></i> Apparel</button>
+                        <button onclick="filterCategory('caps', this)" class="filter-btn px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold glass text-slate-300 hover:border-brand-accent hover:text-white transition-all whitespace-nowrap"><i class="fa-solid fa-hat-cowboy mr-1.5"></i> Caps</button>
+                        <button onclick="filterCategory('stationery', this)" class="filter-btn px-5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold glass text-slate-300 hover:border-brand-accent hover:text-white transition-all whitespace-nowrap"><i class="fa-solid fa-pen-ruler mr-1.5"></i> Stationery</button>
+                    </div>
+                </div>
+
+                <!-- Product Grid -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6" id="product-grid">
+                    <!-- Dynamic Product Cards Injected Here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-brand-dark border-t border-slate-800/80 py-12 mt-auto relative z-10 text-slate-400 text-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div class="col-span-1 md:col-span-2">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-9 h-9 rounded-lg bg-gradient-to-br from-brand-accent to-brand-purple flex items-center justify-center">
+                        <i class="fa-solid fa-graduation-cap text-white"></i>
+                    </div>
+                    <span class="font-extrabold text-xl text-white">NexGen AI School Merch</span>
+                </div>
+                <p class="max-w-sm text-slate-400 text-xs sm:text-sm leading-relaxed mb-4">
+                    The official futuristic merchandise platform for modern schools. Powered by 3D interactive preview and secure Indian checkout.
+                </p>
+                <div class="flex items-center gap-3 text-xs text-slate-400">
+                    <span class="px-2.5 py-1 bg-slate-800 rounded border border-slate-700"><i class="fa-solid fa-shield-halved text-brand-success mr-1"></i> 100% Secure Checkout</span>
+                    <span class="px-2.5 py-1 bg-slate-800 rounded border border-slate-700"><i class="fa-solid fa-truck-fast text-brand-accent mr-1"></i> Pan-India Shipping</span>
+                </div>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-3 text-base">Quick Links</h4>
+                <ul class="space-y-2 text-xs sm:text-sm">
+                    <li><a href="#products-section" class="hover:text-brand-accent transition-colors">School Uniforms & Tees</a></li>
+                    <li><a href="#products-section" class="hover:text-brand-accent transition-colors">Geometry & Math Sets</a></li>
+                    <li><a href="#products-section" class="hover:text-brand-accent transition-colors">Smart Backpacks</a></li>
+                    <li><a href="#ai-picks" class="hover:text-brand-accent transition-colors">Student Top Ratings</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h4 class="text-white font-bold mb-3 text-base">Accepted Payment Modes</h4>
+                <div class="grid grid-cols-3 gap-2 text-center text-xs">
+                    <div class="p-2 bg-slate-800/80 rounded border border-slate-700 text-slate-200"><i class="fa-solid fa-qrcode text-brand-accent block mb-1"></i> UPI</div>
+                    <div class="p-2 bg-slate-800/80 rounded border border-slate-700 text-slate-200"><i class="fa-solid fa-credit-card text-brand-purple block mb-1"></i> Cards</div>
+                    <div class="p-2 bg-slate-800/80 rounded border border-slate-700 text-slate-200"><i class="fa-solid fa-building-columns text-brand-amazon block mb-1"></i> NetBank</div>
+                    <div class="p-2 bg-slate-800/80 rounded border border-slate-700 text-slate-200 col-span-3"><i class="fa-solid fa-hand-holding-dollar text-brand-success mr-1"></i> Cash on Delivery Available</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 pt-6 border-t border-slate-800/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
+            <div>&copy; 2026 NexGen School Merchandise. All Rights Reserved.</div>
+            <div class="flex gap-4">
+                <a href="#" class="hover:text-white">Privacy Policy</a>
+                <a href="#" class="hover:text-white">Terms of Sale</a>
+                <a href="#" class="hover:text-white">Return Policy</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Slide-in Cart Sidebar -->
+    <div id="cart-overlay" onclick="toggleCart()" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden opacity-0 transition-opacity duration-300"></div>
+    
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[420px] bg-brand-dark z-50 cart-closed shadow-2xl border-l border-slate-800 flex flex-col transition-transform duration-300">
+        <!-- Cart Header -->
+        <div class="p-5 border-b border-slate-800 flex justify-between items-center bg-slate-900/80">
+            <h2 class="text-lg font-extrabold flex items-center gap-2 text-white">
+                <i class="fa-solid fa-bag-shopping text-brand-accent"></i> School Loadout Cart
+            </h2>
+            <button onclick="toggleCart()" class="w-8 h-8 rounded-full hover:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-white transition-colors">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Cart Items Container -->
+        <div id="cart-items" class="flex-grow p-5 overflow-y-auto flex flex-col gap-3">
+            <!-- Populated via JavaScript -->
+        </div>
+
+        <!-- Cart Summary & Promo Section -->
+        <div class="p-5 border-t border-slate-800 bg-slate-900/90 backdrop-blur-md">
+            
+            <!-- Promo Code Input -->
+            <div class="mb-4">
+                <div class="flex gap-2">
+                    <input type="text" id="promo-code" placeholder="Promo code (Try NEXGEN10)" class="flex-1 px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-xs uppercase text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-accent">
+                    <button onclick="applyPromoCode()" class="px-3 py-2 bg-slate-700 hover:bg-brand-accent text-white font-bold rounded-lg text-xs transition-colors">Apply</button>
+                </div>
+                <div id="promo-msg" class="text-[11px] mt-1 hidden"></div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div class="space-y-1.5 text-xs text-slate-300 mb-4">
+                <div class="flex justify-between">
+                    <span>Subtotal</span>
+                    <span id="summary-subtotal" class="font-semibold text-white">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>GST (18%)</span>
+                    <span id="summary-tax" class="font-semibold text-white">₹0</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Delivery Fee</span>
+                    <span id="summary-shipping" class="font-semibold text-brand-success">FREE</span>
+                </div>
+                <div id="discount-row" class="flex justify-between text-brand-accent hidden">
+                    <span>Discount (10%)</span>
+                    <span id="summary-discount">-₹0</span>
+                </div>
+                <div class="flex justify-between text-base font-extrabold text-white pt-2 border-t border-slate-800">
+                    <span>Total Amount</span>
+                    <span id="summary-total" class="text-brand-accent">₹0</span>
+                </div>
+            </div>
+
+            <button id="checkout-btn" onclick="startAmazonCheckout()" class="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-amazon to-yellow-500 text-slate-950 font-bold text-sm hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,153,0,0.3)] flex justify-center items-center gap-2">
+                <i class="fa-solid fa-lock text-xs"></i> Proceed to Amazon-style Checkout
+            </button>
+        </div>
+    </div>
+
+    <!-- Amazon-Style Multi-Step Checkout Modal -->
+    <div id="checkout-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-slate-700 w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <!-- Header with steps indicator -->
+            <div class="bg-slate-900 p-4 border-b border-slate-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-brands fa-amazon text-brand-amazon text-2xl"></i>
+                    <span class="font-bold text-white text-sm">Amazon-Style Express Checkout</span>
+                </div>
+                <button onclick="closeCheckoutModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <!-- Progress Step Bar -->
+            <div class="bg-slate-800/50 px-6 py-3 border-b border-slate-800 flex justify-between text-xs font-semibold">
+                <div id="step-1-indicator" class="text-brand-amazon flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-brand-amazon text-slate-950 flex items-center justify-center text-[10px]">1</span> Address</div>
+                <div id="step-2-indicator" class="text-slate-500 flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[10px]">2</span> Payment</div>
+                <div id="step-3-indicator" class="text-slate-500 flex items-center gap-1.5"><span class="w-5 h-5 rounded-full bg-slate-700 text-slate-300 flex items-center justify-center text-[10px]">3</span> Review & Place</div>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 overflow-y-auto flex-1 text-sm text-slate-200">
+                
+                <!-- STEP 1: Shipping Address -->
+                <div id="checkout-step-1" class="space-y-4">
+                    <h3 class="font-bold text-base text-white border-b border-slate-800 pb-2">Enter Shipping Address (India)</h3>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Full Name</label>
+                            <input type="text" id="ship-name" value="Rohan Sharma" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:border-brand-accent focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">Mobile Number</label>
+                            <input type="text" id="ship-phone" value="+91 98765 43210" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:border-brand-accent focus:outline-none">
+                        </div>
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs text-slate-400 mb-1">Flat / House No. / School Hostel / Street</label>
+                            <input type="text" id="ship-address" value="Flat 402, Apex Heights, Park Street" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:border-brand-accent focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">City</label>
+                            <input type="text" id="ship-city" value="Mumbai" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:border-brand-accent focus:outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs text-slate-400 mb-1">PIN Code</label>
+                            <input type="text" id="ship-pincode" value="400001" class="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-white text-xs focus:border-brand-accent focus:outline-none">
+                        </div>
+                    </div>
+
+                    <button onclick="goToCheckoutStep(2)" class="w-full py-3 mt-4 bg-brand-amazon hover:bg-yellow-500 text-slate-950 font-bold rounded-xl transition-all">
+                        Deliver to this Address <i class="fa-solid fa-arrow-right ml-1"></i>
+                    </button>
+                </div>
+
+                <!-- STEP 2: Payment Mode Selection -->
+                <div id="checkout-step-2" class="space-y-4 hidden">
+                    <h3 class="font-bold text-base text-white border-b border-slate-800 pb-2">Select Payment Method</h3>
+                    
+                    <div class="space-y-2.5">
+                        <!-- UPI Option -->
+                        <label class="flex items-center justify-between p-3.5 bg-slate-900/90 rounded-xl border border-brand-accent/50 cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment-method" value="upi" checked class="text-brand-accent focus:ring-0">
+                                <div>
+                                    <div class="font-bold text-white text-xs">UPI (Google Pay / PhonePe / Paytm)</div>
+                                    <div class="text-[11px] text-slate-400">Instant approval with VPA / QR code</div>
+                                </div>
+                            </div>
+                            <span class="text-xs bg-brand-accent/20 text-brand-accent px-2 py-0.5 rounded font-bold">Recommended</span>
+                        </label>
+
+                        <!-- Card Option -->
+                        <label class="flex items-center justify-between p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment-method" value="card" class="text-brand-accent focus:ring-0">
+                                <div>
+                                    <div class="font-bold text-white text-xs">Credit / Debit Card</div>
+                                    <div class="text-[11px] text-slate-400">Visa, Mastercard, RuPay, Maestro</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-credit-card text-slate-400"></i>
+                        </label>
+
+                        <!-- NetBanking Option -->
+                        <label class="flex items-center justify-between p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment-method" value="netbanking" class="text-brand-accent focus:ring-0">
+                                <div>
+                                    <div class="font-bold text-white text-xs">Net Banking</div>
+                                    <div class="text-[11px] text-slate-400">SBI, HDFC, ICICI, Axis, Kotak & 40+ banks</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-building-columns text-slate-400"></i>
+                        </label>
+
+                        <!-- Cash on Delivery -->
+                        <label class="flex items-center justify-between p-3.5 bg-slate-900/90 rounded-xl border border-slate-800 cursor-pointer">
+                            <div class="flex items-center gap-3">
+                                <input type="radio" name="payment-method" value="cod" class="text-brand-accent focus:ring-0">
+                                <div>
+                                    <div class="font-bold text-white text-xs">Cash on Delivery (COD)</div>
+                                    <div class="text-[11px] text-slate-400">Pay cash upon school item delivery</div>
+                                </div>
+                            </div>
+                            <i class="fa-solid fa-hand-holding-dollar text-slate-400"></i>
+                        </label>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="goToCheckoutStep(1)" class="w-1/3 py-3 border border-slate-700 text-slate-300 font-semibold rounded-xl hover:bg-slate-800">
+                            Back
+                        </button>
+                        <button onclick="goToCheckoutStep(3)" class="w-2/3 py-3 bg-brand-amazon hover:bg-yellow-500 text-slate-950 font-bold rounded-xl transition-all">
+                            Continue to Review <i class="fa-solid fa-arrow-right ml-1"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Final Order Review -->
+                <div id="checkout-step-3" class="space-y-4 hidden">
+                    <h3 class="font-bold text-base text-white border-b border-slate-800 pb-2">Review Your Order & Place</h3>
+                    
+                    <div class="bg-slate-900 p-3.5 rounded-xl space-y-2 text-xs">
+                        <div class="flex justify-between border-b border-slate-800 pb-2">
+                            <span class="text-slate-400">Deliver To:</span>
+                            <span id="review-address-text" class="font-medium text-white text-right">--</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Payment Mode:</span>
+                            <span id="review-payment-text" class="font-bold text-brand-accent uppercase">UPI</span>
+                        </div>
+                    </div>
+
+                    <!-- Items Summary List -->
+                    <div id="review-items-list" class="max-h-36 overflow-y-auto space-y-2 pr-1">
+                        <!-- Injected JS -->
+                    </div>
+
+                    <div class="bg-slate-900 p-3.5 rounded-xl space-y-1.5 text-xs">
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">Items Total:</span>
+                            <span id="review-subtotal" class="font-semibold">₹0</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-400">GST (18%):</span>
+                            <span id="review-tax" class="font-semibold">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-brand-success">
+                            <span>Shipping Fee:</span>
+                            <span>FREE</span>
+                        </div>
+                        <div class="flex justify-between font-extrabold text-sm text-white pt-2 border-t border-slate-800">
+                            <span>Order Total:</span>
+                            <span id="review-final-total" class="text-brand-amazon">₹0</span>
+                        </div>
+                    </div>
+
+                    <div class="flex gap-3 pt-2">
+                        <button onclick="goToCheckoutStep(2)" class="w-1/3 py-3 border border-slate-700 text-slate-300 font-semibold rounded-xl hover:bg-slate-800">
+                            Back
+                        </button>
+                        <button onclick="placeFinalOrder()" class="w-2/3 py-3 bg-gradient-to-r from-brand-amazon to-yellow-500 text-slate-950 font-extrabold rounded-xl hover:brightness-110 shadow-lg transition-all">
+                            <i class="fa-solid fa-check-circle mr-1"></i> Place Order Now
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 4: Success / Order Placed Confirmation -->
+                <div id="checkout-step-4" class="text-center py-6 space-y-4 hidden">
+                    <div class="w-16 h-16 bg-brand-success/20 border-2 border-brand-success rounded-full flex items-center justify-center mx-auto text-brand-success text-2xl animate-bounce">
+                        <i class="fa-solid fa-check"></i>
+                    </div>
+                    
+                    <h2 class="text-2xl font-extrabold text-white">Order Confirmed!</h2>
+                    <p class="text-xs text-slate-300 max-w-md mx-auto">
+                        Thank you for your order. Your official school merchandise package is being prepared for dispatch.
+                    </p>
+
+                    <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl text-left max-w-md mx-auto text-xs space-y-2">
+                        <div class="flex justify-between"><span class="text-slate-400">Order ID:</span><span id="confirmed-order-id" class="font-mono font-bold text-brand-accent">NXG-88219</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Estimated Delivery:</span><span class="font-bold text-brand-success">2-3 Business Days</span></div>
+                        <div class="flex justify-between"><span class="text-slate-400">Payment Status:</span><span class="font-bold text-white">Paid (Verified)</span></div>
+                    </div>
+
+                    <button onclick="closeCheckoutModal(); resetCart();" class="px-8 py-3 bg-brand-accent hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition-all">
+                        Continue Shopping
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Product Quick View & Reviews Modal -->
+    <div id="product-modal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-[60] hidden flex items-center justify-center p-4">
+        <div class="bg-brand-card border border-slate-700 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            
+            <div class="p-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <span id="modal-category-tag" class="px-2.5 py-0.5 rounded bg-brand-purple/20 text-brand-purple text-xs font-bold uppercase">Hoodies</span>
+                    <span class="text-xs text-slate-400">&bull; Verified Campus Apparel</span>
+                </div>
+                <button onclick="closeProductModal()" class="w-8 h-8 rounded-full hover:bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-6">
+                <!-- Top Split Section: Image / 3D Canvas + Main Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Media View Box (Toggle Image vs 3D Mesh Canvas) -->
+                    <div class="relative bg-slate-900 rounded-xl overflow-hidden border border-slate-800 h-64 flex items-center justify-center group">
+                        <img id="modal-product-img" src="" class="w-full h-full object-cover">
+                        <div id="modal-3d-canvas" class="w-full h-full absolute inset-0 hidden"></div>
+                        
+                        <!-- 3D Preview Toggle Button -->
+                        <button id="toggle-3d-btn" onclick="toggle3DProductView()" class="absolute bottom-3 right-3 px-3 py-1.5 bg-slate-950/80 hover:bg-brand-accent text-white text-xs font-bold rounded-lg border border-slate-700 backdrop-blur transition-all flex items-center gap-1.5">
+                            <i class="fa-solid fa-cube text-brand-accent"></i> <span id="btn-3d-text">Interactive 3D Preview</span>
+                        </button>
+                    </div>
+
+                    <!-- Details -->
+                    <div class="flex flex-col">
+                        <h2 id="modal-product-title" class="text-xl sm:text-2xl font-bold text-white mb-2">Item Title</h2>
+                        
+                        <!-- Amazon-Style Rating Bar -->
+                        <div class="flex items-center gap-2 mb-3">
+                            <div id="modal-stars-container" class="flex text-yellow-400 text-xs"></div>
+                            <span id="modal-rating-num" class="text-xs font-bold text-white">4.8</span>
+                            <span class="text-slate-500 text-xs">&bull;</span>
+                            <a href="#reviews-section" class="text-xs text-brand-accent hover:underline" id="modal-reviews-count">128 ratings</a>
+                        </div>
+
+                        <div class="text-2xl font-extrabold text-white mb-4" id="modal-product-price">₹0</div>
+
+                        <p id="modal-product-desc" class="text-slate-300 text-xs leading-relaxed mb-6">
+                            High quality material designed for high performance school life.
+                        </p>
+
+                        <div class="mt-auto flex gap-3">
+                            <button id="modal-add-cart-btn" class="flex-1 py-3 bg-brand-accent hover:bg-cyan-400 text-slate-950 font-bold rounded-xl transition-all shadow-[0_0_15px_rgba(6,182,212,0.4)] text-xs sm:text-sm">
+                                <i class="fa-solid fa-cart-plus mr-1"></i> Add to Loadout
+                            </button>
+                            <button id="modal-wishlist-btn" class="p-3 border border-slate-700 hover:border-brand-purple hover:text-brand-purple rounded-xl text-slate-300 transition-colors">
+                                <i class="fa-regular fa-heart"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Amazon Style Customer Reviews Breakdown Section -->
+                <div id="reviews-section" class="pt-6 border-t border-slate-800">
+                    <h3 class="font-extrabold text-lg text-white mb-4 flex items-center gap-2">
+                        <i class="fa-brands fa-amazon text-brand-amazon"></i> Customer Reviews & Ratings
+                    </h3>
+
+                    <!-- Ratings Breakdown Progress Bars -->
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 bg-slate-900/60 p-4 rounded-xl border border-slate-800">
+                        <div class="text-center flex flex-col justify-center items-center">
+                            <div class="text-4xl font-extrabold text-white" id="breakdown-rating-avg">4.8</div>
+                            <div class="flex text-yellow-400 text-sm my-1" id="breakdown-stars"></div>
+                            <div class="text-xs text-slate-400" id="breakdown-total-text">Based on 128 reviews</div>
+                        </div>
+
+                        <div class="col-span-2 space-y-1.5 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="w-12 text-slate-400">5 star</span>
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-amazon" style="width: 78%"></div>
+                                </div>
+                                <span class="w-8 text-right text-slate-400">78%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-12 text-slate-400">4 star</span>
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-amazon" style="width: 15%"></div>
+                                </div>
+                                <span class="w-8 text-right text-slate-400">15%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-12 text-slate-400">3 star</span>
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-amazon" style="width: 4%"></div>
+                                </div>
+                                <span class="w-8 text-right text-slate-400">4%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-12 text-slate-400">2 star</span>
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-amazon" style="width: 2%"></div>
+                                </div>
+                                <span class="w-8 text-right text-slate-400">2%</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="w-12 text-slate-400">1 star</span>
+                                <div class="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+                                    <div class="h-full bg-brand-amazon" style="width: 1%"></div>
+                                </div>
+                                <span class="w-8 text-right text-slate-400">1%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Individual Review Comments List -->
+                    <div class="space-y-3 mb-6" id="modal-reviews-list">
+                        <!-- Injected JS -->
+                    </div>
+
+                    <!-- Write a Review Form -->
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-800">
+                        <h4 class="font-bold text-xs text-white uppercase tracking-wider mb-2">Write a Verified Student Review</h4>
+                        <div class="space-y-3 text-xs">
+                            <div class="flex items-center gap-2">
+                                <span class="text-slate-400">Select Rating:</span>
+                                <div class="flex gap-1 text-yellow-400 cursor-pointer" id="user-rating-input">
+                                    <i class="fa-solid fa-star" onclick="setUserRating(1)"></i>
+                                    <i class="fa-solid fa-star" onclick="setUserRating(2)"></i>
+                                    <i class="fa-solid fa-star" onclick="setUserRating(3)"></i>
+                                    <i class="fa-solid fa-star" onclick="setUserRating(4)"></i>
+                                    <i class="fa-solid fa-star" onclick="setUserRating(5)"></i>
+                                </div>
+                            </div>
+                            <textarea id="new-review-text" rows="2" placeholder="Write your thoughts on size, material, fabric or stationery durability..." class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-brand-accent"></textarea>
+                            <button onclick="submitReview()" class="px-4 py-2 bg-brand-purple hover:bg-purple-600 text-white font-bold rounded-lg transition-colors">
+                                Submit Review
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Popup Notification -->
+    <div id="toast" class="toast fixed bottom-6 left-1/2 z-[100] bg-slate-900 border border-brand-accent/60 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 backdrop-blur-md">
+        <div class="w-6 h-6 rounded-full bg-brand-accent/20 text-brand-accent flex items-center justify-center text-xs">
+            <i class="fa-solid fa-check"></i>
+        </div>
+        <span id="toast-msg" class="text-xs font-semibold">Item added to loadout!</span>
+    </div>
+
+    <script>
+        // --- 1. Master School Product Catalog (Indian Currency ₹) ---
+        const products = [
+            {
+                id: 1,
+                name: "CyberCore Heavyweight Pullover Hoodie",
+                price: 2499,
+                category: "hoodies",
+                isFeatured: true,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=600&q=80",
+                desc: "400 GSM fleece lined thermal hoodie with glowing cyber crest. Ideal for chilly classrooms and campus events.",
+                rating: 4.8,
+                reviewCount: 342,
+                reviews: [
+                    { name: "Aarav Patel", rating: 5, date: "12 Oct 2026", comment: "Super soft fabric! Kept me warm during early morning lectures. Fits perfectly." },
+                    { name: "Ananya Sen", rating: 4, date: "02 Oct 2026", comment: "Great design and print quality hasn't faded after 3 washes." }
+                ]
+            },
+            {
+                id: 2,
+                name: "Quantum Tech Snapback Cap",
+                price: 799,
+                category: "caps",
+                isFeatured: true,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=600&q=80",
+                desc: "Lightweight, UV-blocking cap with breathable mesh and futuristic stitched emblem.",
+                rating: 4.6,
+                reviewCount: 128,
+                reviews: [
+                    { name: "Devansh K.", rating: 5, date: "18 Sep 2026", comment: "Looks awesome for sports day! Strap adjustment is smooth." }
+                ]
+            },
+            {
+                id: 3,
+                name: "Neural Mesh Ergonomic School Backpack",
+                price: 3299,
+                category: "stationery",
+                isFeatured: true,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=600&q=80",
+                desc: "Spacious 30L backpack with laptop compartment, water-resistant zippers, and posture support.",
+                rating: 4.9,
+                reviewCount: 512,
+                reviews: [
+                    { name: "Priya Sharma", rating: 5, date: "24 Sep 2026", comment: "Fits my heavy textbooks and 15-inch laptop easily. Very comfortable straps." }
+                ]
+            },
+            {
+                id: 4,
+                name: "DataStream College Varsity Jacket",
+                price: 4499,
+                category: "clothes",
+                isFeatured: true,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=600&q=80",
+                desc: "Premium school spirit jacket crafted with genuine leather sleeves and wool-blend body.",
+                rating: 4.7,
+                reviewCount: 94,
+                reviews: [
+                    { name: "Vikram R.", rating: 5, date: "08 Oct 2026", comment: "Extremely stylish! Premium feel and classy buttons." }
+                ]
+            },
+            {
+                id: 5,
+                name: "Smart-Ink Digital Stylus & Notebook Pen",
+                price: 1499,
+                category: "stationery",
+                isFeatured: false,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1585336261022-680e295ce3fe?auto=format&fit=crop&w=600&q=80",
+                desc: "Dual function stylus and smooth gel rollerball pen for clean exam note-taking.",
+                rating: 4.4,
+                reviewCount: 205,
+                reviews: [
+                    { name: "Neha Gupta", rating: 4, date: "01 Oct 2026", comment: "Very fluid ink, perfect grip for long study sessions." }
+                ]
+            },
+            {
+                id: 6,
+                name: "Holo-Grid Prismatic A5 Notebook (Pack of 3)",
+                price: 599,
+                category: "stationery",
+                isFeatured: false,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=600&q=80",
+                desc: "120 GSM bleed-proof paper with futuristic light-shifting hologram covers.",
+                rating: 4.6,
+                reviewCount: 88,
+                reviews: [
+                    { name: "Siddharth B.", rating: 5, date: "15 Sep 2026", comment: "Paper quality is top notch. Fountain pens don't bleed!" }
+                ]
+            },
+            {
+                id: 7,
+                name: "Aerospace Grade Geometry & Math Set",
+                price: 899,
+                category: "stationery",
+                isFeatured: false,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1453738773917-9c30797131ee?auto=format&fit=crop&w=600&q=80",
+                desc: "Rust-free aluminum compass, protractor, dividers, and ruler in a sleek shockproof tin box.",
+                rating: 4.8,
+                reviewCount: 167,
+                reviews: [
+                    { name: "Rishabh Mehta", rating: 5, date: "20 Sep 2026", comment: "Precise measurements and very sturdy tools." }
+                ]
+            },
+            {
+                id: 8,
+                name: "Hydro-Sync Vacuum Insulated School Bottle (750ml)",
+                price: 1199,
+                category: "stationery",
+                isFeatured: false,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1602143407151-7111542de6e8?auto=format&fit=crop&w=600&q=80",
+                desc: "Keeps water cold for 24 hours. BPA-free stainless steel with leakproof cap.",
+                rating: 4.7,
+                reviewCount: 230,
+                reviews: [
+                    { name: "Kavya N.", rating: 5, date: "28 Sep 2026", comment: "Keeps my water ice cold throughout the entire school day!" }
+                ]
+            },
+            {
+                id: 9,
+                name: "NexGen Official Athletic Track Pants",
+                price: 1599,
+                category: "clothes",
+                isFeatured: false,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1506629082955-511b1aa562c8?auto=format&fit=crop&w=600&q=80",
+                desc: "Breathable 4-way stretch track joggers with zipped side pockets for school sports.",
+                rating: 4.5,
+                reviewCount: 110,
+                reviews: [
+                    { name: "Arjun Verma", rating: 4, date: "10 Oct 2026", comment: "Flexible and lightweight. Zipped pockets are very useful." }
+                ]
+            },
+            {
+                id: 10,
+                name: "Stealth Beanie & Winter Scarf Combo",
+                price: 699,
+                category: "caps",
+                isFeatured: false,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1576871337622-98d48d1cf531?auto=format&fit=crop&w=600&q=80",
+                desc: "Warm knitted beanie with cozy fleece neck warmer featuring subtile school crest.",
+                rating: 4.3,
+                reviewCount: 75,
+                reviews: [
+                    { name: "Meera Nair", rating: 4, date: "05 Oct 2026", comment: "Very cozy for morning sports practice." }
+                ]
+            },
+            {
+                id: 11,
+                name: "NexGen Breathable Cotton Polo Shirt",
+                price: 999,
+                category: "clothes",
+                isFeatured: false,
+                aiPick: true,
+                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?auto=format&fit=crop&w=600&q=80",
+                desc: "100% combed cotton uniform polo shirt with anti-pilling and color-lock technology.",
+                rating: 4.6,
+                reviewCount: 190,
+                reviews: [
+                    { name: "Rahul S.", rating: 5, date: "14 Sep 2026", comment: "Comfy fit for long days." }
+                ]
+            },
+            {
+                id: 12,
+                name: "Stainless Steel Insulated Bento Lunch Box",
+                price: 1299,
+                category: "stationery",
+                isFeatured: false,
+                aiPick: false,
+                image: "https://images.unsplash.com/photo-1581452285141-8dbcb93452ea?auto=format&fit=crop&w=600&q=80",
+                desc: "3-compartment leakproof thermal lunch box keeps food warm and fresh.",
+                rating: 4.8,
+                reviewCount: 310,
+                reviews: [
+                    { name: "Sunita P.", rating: 5, date: "09 Oct 2026", comment: "My child loves it! Easy to wash and leakproof." }
+                ]
+            }
+        ];
+
+        // Global State Variables
+        let cart = [];
+        let wishlist = [];
+        let currentFilter = 'all';
+        let appliedDiscount = 0;
+        let activeModalProduct = null;
+        let selectedUserRating = 5;
+        let is3DViewActive = false;
+        let modalThreeScene, modalThreeCamera, modalThreeRenderer, modalThreeMesh;
+
+        // --- 2. Render Functions ---
+
+        function generateProductCard(product, isSlider = false) {
+            const aiBadge = product.aiPick ? 
+                `<div class="absolute top-3 left-3 bg-brand-purple/90 backdrop-blur text-white text-[10px] font-extrabold px-2.5 py-1 rounded-md shadow-md z-10 flex items-center gap-1">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i> AI PICK
+                </div>` : '';
+
+            const wrapperClass = isSlider ? 
+                `slider-item w-[260px] sm:w-[300px] flex-none` : 
+                `w-full`;
+
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(product.rating)) {
+                    starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
+                } else if (i === Math.ceil(product.rating) && !Number.isInteger(product.rating)) {
+                    starsHTML += '<i class="fa-solid fa-star-half-stroke text-yellow-400"></i>';
+                } else {
+                    starsHTML += '<i class="fa-regular fa-star text-yellow-400/30"></i>';
+                }
+            }
+
+            return `
+                <div class="${wrapperClass}">
+                    <div class="glass-card rounded-2xl overflow-hidden h-full flex flex-col card-3d group relative border border-slate-800">
+                        ${aiBadge}
+                        
+                        <!-- Image Box -->
+                        <div class="relative h-48 sm:h-52 bg-slate-900 overflow-hidden cursor-pointer" onclick="openProductModal(${product.id})">
+                            <img src="${product.image}" alt="${product.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-90 group-hover:opacity-100">
+                            
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                                <button onclick="event.stopPropagation(); openProductModal(${product.id})" class="px-3.5 py-1.5 bg-slate-900/90 text-white rounded-lg text-xs font-bold hover:bg-brand-accent hover:text-slate-950 transition-colors">
+                                    <i class="fa-solid fa-eye mr-1"></i> Quick View
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Info -->
+                        <div class="p-4 flex flex-col flex-grow bg-gradient-to-b from-transparent to-slate-950/80">
+                            <div class="text-[10px] font-bold text-brand-accent uppercase tracking-wider mb-1">${product.category}</div>
+                            <h3 onclick="openProductModal(${product.id})" class="text-sm font-bold text-white mb-1 leading-snug line-clamp-2 hover:text-brand-accent cursor-pointer transition-colors">${product.name}</h3>
+                            
+                            <!-- Star Rating -->
+                            <div class="flex items-center gap-1.5 mb-2">
+                                <div class="flex text-[11px] gap-0.5">${starsHTML}</div>
+                                <span class="text-[11px] text-slate-400 font-medium">(${product.reviewCount})</span>
+                            </div>
+
+                            <div class="flex items-center justify-between mt-auto pt-3 border-t border-slate-800/80">
+                                <span class="text-lg font-extrabold text-white">₹${product.price.toLocaleString('en-IN')}</span>
+                                <button onclick="addToCart(${product.id})" class="px-3 py-1.5 bg-brand-accent/20 border border-brand-accent/50 text-brand-accent hover:bg-brand-accent hover:text-slate-950 font-bold rounded-lg text-xs transition-all flex items-center gap-1">
+                                    <i class="fa-solid fa-cart-plus"></i> Add
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderStore() {
+            // Render Featured Slider
+            const featuredItems = products.filter(p => p.isFeatured || p.aiPick);
+            document.getElementById('featured-slider').innerHTML = featuredItems.map(p => generateProductCard(p, true)).join('');
+
+            // Render Product Grid
+            filterGrid();
+        }
+
+        function filterGrid() {
+            const grid = document.getElementById('product-grid');
+            const searchVal = (document.getElementById('search-input')?.value || document.getElementById('mobile-search-input')?.value || '').toLowerCase();
+
+            let filtered = products;
+
+            if (currentFilter !== 'all') {
+                filtered = filtered.filter(p => p.category === currentFilter);
+            }
+
+            if (searchVal.trim() !== '') {
+                filtered = filtered.filter(p => p.name.toLowerCase().includes(searchVal) || p.desc.toLowerCase().includes(searchVal) || p.category.toLowerCase().includes(searchVal));
+            }
+
+            if (filtered.length === 0) {
+                grid.innerHTML = `
+                    <div class="col-span-full py-16 text-center text-slate-400">
+                        <i class="fa-solid fa-box-open text-4xl text-slate-600 mb-3 block"></i>
+                        <p class="text-base font-semibold">No school merch found matching your search query.</p>
+                        <button onclick="clearSearch(); filterCategory('all')" class="mt-3 px-4 py-1.5 bg-slate-800 text-brand-accent rounded-lg text-xs font-bold">Reset Filters</button>
+                    </div>
+                `;
+            } else {
+                grid.innerHTML = filtered.map(p => generateProductCard(p, false)).join('');
+            }
+        }
+
+        function filterCategory(cat, btnElement) {
+            currentFilter = cat;
+            if (btnElement) {
+                document.querySelectorAll('.filter-btn').forEach(b => {
+                    b.classList.remove('border-brand-accent', 'text-brand-accent', 'active');
+                    b.classList.add('text-slate-300');
+                });
+                btnElement.classList.add('border-brand-accent', 'text-brand-accent', 'active');
+                btnElement.classList.remove('text-slate-300');
+            }
+            filterGrid();
+        }
+
+        function scrollSlider(direction) {
+            const container = document.getElementById('featured-slider');
+            container.scrollBy({ left: direction, behavior: 'smooth' });
+        }
+
+        // --- 3. Cart & Wishlist Logic ---
+
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const existing = cart.find(item => item.id === productId);
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCartUI();
+            showToast(`Added "${product.name}" to loadout!`);
+        }
+
+        function updateQuantity(productId, delta) {
+            const item = cart.find(i => i.id === productId);
+            if (item) {
+                item.quantity += delta;
+                if (item.quantity <= 0) {
+                    cart = cart.filter(i => i.id !== productId);
+                }
+                updateCartUI();
+            }
+        }
+
+        function removeFromCart(productId) {
+            cart = cart.filter(i => i.id !== productId);
+            updateCartUI();
+            showToast("Item removed from loadout.");
+        }
+
+        function updateCartUI() {
+            const cartItemsContainer = document.getElementById('cart-items');
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            
+            document.getElementById('cart-count').textContent = totalCount;
+
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="h-64 flex flex-col items-center justify-center text-slate-500 gap-3">
+                        <i class="fa-solid fa-cart-flatbed text-4xl opacity-40"></i>
+                        <p class="text-xs">Your school loadout is currently empty.</p>
+                    </div>
+                `;
+            } else {
+                cartItemsContainer.innerHTML = cart.map(item => `
+                    <div class="flex gap-3 p-3 rounded-xl bg-slate-900/90 border border-slate-800 items-center">
+                        <img src="${item.image}" class="w-14 h-14 rounded-lg object-cover bg-slate-800">
+                        <div class="flex-1 min-w-0">
+                            <h4 class="text-xs font-bold text-white truncate">${item.name}</h4>
+                            <div class="text-brand-accent text-xs font-bold mt-0.5">₹${(item.price * item.quantity).toLocaleString('en-IN')}</div>
+                            <div class="flex items-center gap-2 mt-1.5">
+                                <button onclick="updateQuantity(${item.id}, -1)" class="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-xs hover:bg-slate-700"><i class="fa-solid fa-minus"></i></button>
+                                <span class="text-xs w-4 text-center text-white font-bold">${item.quantity}</span>
+                                <button onclick="updateQuantity(${item.id}, 1)" class="w-5 h-5 rounded bg-slate-800 border border-slate-700 flex items-center justify-center text-xs hover:bg-slate-700"><i class="fa-solid fa-plus"></i></button>
+                            </div>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="text-slate-500 hover:text-red-400 p-1.5 transition-colors">
+                            <i class="fa-solid fa-trash-can text-xs"></i>
+                        </button>
+                    </div>
+                `).join('');
+            }
+
+            // Price Calculations
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = Math.round(subtotal * 0.18);
+            const discountAmt = Math.round(subtotal * appliedDiscount);
+            const shipping = (subtotal >= 999 || subtotal === 0) ? 0 : 70;
+            const grandTotal = Math.max(0, subtotal + tax + shipping - discountAmt);
+
+            document.getElementById('nav-cart-total').textContent = `₹${grandTotal.toLocaleString('en-IN')}`;
+            document.getElementById('summary-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+            document.getElementById('summary-tax').textContent = `₹${tax.toLocaleString('en-IN')}`;
+            document.getElementById('summary-shipping').textContent = shipping === 0 ? 'FREE' : `₹${shipping}`;
+            document.getElementById('summary-total').textContent = `₹${grandTotal.toLocaleString('en-IN')}`;
+
+            if (appliedDiscount > 0) {
+                document.getElementById('discount-row').classList.remove('hidden');
+                document.getElementById('summary-discount').textContent = `-₹${discountAmt.toLocaleString('en-IN')}`;
+            } else {
+                document.getElementById('discount-row').classList.add('hidden');
+            }
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            const isOpen = sidebar.classList.contains('cart-open');
+
+            if (isOpen) {
+                sidebar.classList.remove('cart-open');
+                sidebar.classList.add('cart-closed');
+                overlay.classList.add('hidden');
+            } else {
+                overlay.classList.remove('hidden');
+                sidebar.classList.remove('cart-closed');
+                sidebar.classList.add('cart-open');
+            }
+        }
+
+        function applyPromoCode() {
+            const input = document.getElementById('promo-code').value.trim().toUpperCase();
+            const msg = document.getElementById('promo-msg');
+            msg.classList.remove('hidden');
+
+            if (input === 'NEXGEN10') {
+                appliedDiscount = 0.10;
+                msg.className = "text-[11px] mt-1 text-brand-success font-bold";
+                msg.textContent = "10% Student Discount Applied!";
+                updateCartUI();
+            } else {
+                msg.className = "text-[11px] mt-1 text-red-400 font-bold";
+                msg.textContent = "Invalid code. Try 'NEXGEN10'";
+            }
+        }
+
+        function resetCart() {
+            cart = [];
+            appliedDiscount = 0;
+            updateCartUI();
+        }
+
+        // --- 4. Amazon-Style Express Checkout System ---
+
+        function startAmazonCheckout() {
+            if (cart.length === 0) {
+                showToast("Your cart is empty! Add school items first.");
+                return;
+            }
+            toggleCart();
+            goToCheckoutStep(1);
+            document.getElementById('checkout-modal').classList.remove('hidden');
+        }
+
+        function closeCheckoutModal() {
+            document.getElementById('checkout-modal').classList.add('hidden');
+        }
+
+        function goToCheckoutStep(step) {
+            document.getElementById('checkout-step-1').classList.add('hidden');
+            document.getElementById('checkout-step-2').classList.add('hidden');
+            document.getElementById('checkout-step-3').classList.add('hidden');
+            document.getElementById('checkout-step-4').classList.add('hidden');
+
+            // Reset indicators
+            ['step-1-indicator', 'step-2-indicator', 'step-3-indicator'].forEach((id, idx) => {
+                const el = document.getElementById(id);
+                if (idx + 1 === step) {
+                    el.className = "text-brand-amazon font-bold flex items-center gap-1.5";
+                } else if (idx + 1 < step) {
+                    el.className = "text-brand-success font-bold flex items-center gap-1.5";
+                } else {
+                    el.className = "text-slate-500 flex items-center gap-1.5";
+                }
+            });
+
+            document.getElementById(`checkout-step-${step}`).classList.remove('hidden');
+
+            if (step === 3) {
+                // Populate review information
+                const name = document.getElementById('ship-name').value;
+                const addr = document.getElementById('ship-address').value;
+                const city = document.getElementById('ship-city').value;
+                const pin = document.getElementById('ship-pincode').value;
+                const payMethod = document.querySelector('input[name="payment-method"]:checked').value;
+
+                document.getElementById('review-address-text').textContent = `${name}, ${addr}, ${city} - ${pin}`;
+                document.getElementById('review-payment-text').textContent = payMethod.toUpperCase();
+
+                // Items list summary
+                document.getElementById('review-items-list').innerHTML = cart.map(i => `
+                    <div class="flex justify-between items-center text-xs bg-slate-900/60 p-2 rounded border border-slate-800">
+                        <span class="truncate max-w-[200px] text-slate-300">${i.quantity}x ${i.name}</span>
+                        <span class="font-bold text-white">₹${(i.price * i.quantity).toLocaleString('en-IN')}</span>
+                    </div>
+                `).join('');
+
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const tax = Math.round(subtotal * 0.18);
+                const grandTotal = subtotal + tax - Math.round(subtotal * appliedDiscount);
+
+                document.getElementById('review-subtotal').textContent = `₹${subtotal.toLocaleString('en-IN')}`;
+                document.getElementById('review-tax').textContent = `₹${tax.toLocaleString('en-IN')}`;
+                document.getElementById('review-final-total').textContent = `₹${grandTotal.toLocaleString('en-IN')}`;
+            }
+        }
+
+        function placeFinalOrder() {
+            // Generate random Order ID
+            const orderId = 'NXG-' + Math.floor(100000 + Math.random() * 900000);
+            document.getElementById('confirmed-order-id').textContent = orderId;
+            goToCheckoutStep(4);
+        }
+
+        // --- 5. Product Quick View & Amazon Reviews Modal ---
+
+        function openProductModal(productId) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            activeModalProduct = product;
+            is3DViewActive = false;
+
+            document.getElementById('modal-category-tag').textContent = product.category;
+            document.getElementById('modal-product-title').textContent = product.name;
+            document.getElementById('modal-product-price').textContent = `₹${product.price.toLocaleString('en-IN')}`;
+            document.getElementById('modal-product-desc').textContent = product.desc;
+            document.getElementById('modal-rating-num').textContent = product.rating;
+            document.getElementById('modal-reviews-count').textContent = `${product.reviewCount} customer ratings`;
+            document.getElementById('modal-product-img').src = product.image;
+
+            // Reset 3D canvas visibility
+            document.getElementById('modal-product-img').classList.remove('hidden');
+            document.getElementById('modal-3d-canvas').classList.add('hidden');
+            document.getElementById('btn-3d-text').textContent = "Interactive 3D Preview";
+
+            // Render Stars
+            let starsHTML = '';
+            for (let i = 1; i <= 5; i++) {
+                if (i <= Math.floor(product.rating)) starsHTML += '<i class="fa-solid fa-star text-yellow-400"></i>';
+                else starsHTML += '<i class="fa-regular fa-star text-yellow-400/30"></i>';
+            }
+            document.getElementById('modal-stars-container').innerHTML = starsHTML;
+            document.getElementById('breakdown-stars').innerHTML = starsHTML;
+            document.getElementById('breakdown-rating-avg').textContent = product.rating;
+            document.getElementById('breakdown-total-text').textContent = `Based on ${product.reviewCount} ratings`;
+
+            // Render Individual Review Comments
+            renderModalReviews();
+
+            // Setup Add button
+            document.getElementById('modal-add-cart-btn').onclick = function() {
+                addToCart(product.id);
+            };
+
+            document.getElementById('product-modal').classList.remove('hidden');
+        }
+
+        function closeProductModal() {
+            document.getElementById('product-modal').classList.add('hidden');
+            if (modalThreeRenderer) {
+                modalThreeRenderer.dispose();
+                modalThreeRenderer = null;
+            }
+        }
+
+        function renderModalReviews() {
+            if (!activeModalProduct) return;
+            const list = document.getElementById('modal-reviews-list');
+
+            list.innerHTML = activeModalProduct.reviews.map(r => `
+                <div class="bg-slate-900/80 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-white">${r.name}</span>
+                            <span class="bg-brand-success/20 text-brand-success text-[10px] px-1.5 py-0.2 rounded font-semibold"><i class="fa-solid fa-circle-check"></i> Verified Buyer</span>
+                        </div>
+                        <span class="text-slate-500 text-[10px]">${r.date}</span>
+                    </div>
+                    <div class="flex text-yellow-400 text-[10px]">
+                        ${'<i class="fa-solid fa-star"></i>'.repeat(r.rating)}
+                    </div>
+                    <p class="text-slate-300 leading-relaxed">${r.comment}</p>
+                </div>
+            `).join('');
+        }
+
+        function setUserRating(rating) {
+            selectedUserRating = rating;
+            const stars = document.getElementById('user-rating-input').children;
+            for (let i = 0; i < 5; i++) {
+                if (i < rating) {
+                    stars[i].className = "fa-solid fa-star text-yellow-400";
+                } else {
+                    stars[i].className = "fa-regular fa-star text-yellow-400/30";
+                }
+            }
+        }
+
+        function submitReview() {
+            const text = document.getElementById('new-review-text').value.trim();
+            if (!text) {
+                showToast("Please enter review comments before submitting.");
+                return;
+            }
+
+            activeModalProduct.reviews.unshift({
+                name: "You (Student)",
+                rating: selectedUserRating,
+                date: "Today",
+                comment: text
+            });
+
+            activeModalProduct.reviewCount += 1;
+            document.getElementById('modal-reviews-count').textContent = `${activeModalProduct.reviewCount} customer ratings`;
+            document.getElementById('new-review-text').value = '';
+            
+            renderModalReviews();
+            showToast("Your review has been published!");
+        }
+
+        // --- 6. Three.js 3D Interactive Inspection Engine ---
+
+        function toggle3DProductView() {
+            is3DViewActive = !is3DViewActive;
+            const imgEl = document.getElementById('modal-product-img');
+            const canvasContainer = document.getElementById('modal-3d-canvas');
+            const btnText = document.getElementById('btn-3d-text');
+
+            if (is3DViewActive) {
+                imgEl.classList.add('hidden');
+                canvasContainer.classList.remove('hidden');
+                btnText.textContent = "Show Photo View";
+
+                // Initialize Three JS Product Mesh Preview
+                init3DProductMesh(canvasContainer);
+            } else {
+                canvasContainer.classList.add('hidden');
+                imgEl.classList.remove('hidden');
+                btnText.textContent = "Interactive 3D Preview";
+            }
+        }
+
+        function init3DProductMesh(container) {
+            container.innerHTML = ''; // Clear existing
+            
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(50, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera.position.z = 4;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            container.appendChild(renderer.domElement);
+
+            // Shape based on product category
+            let geometry;
+            if (activeModalProduct.category === 'hoodies' || activeModalProduct.category === 'clothes') {
+                geometry = new THREE.BoxGeometry(1.8, 2.2, 0.4);
+            } else if (activeModalProduct.category === 'caps') {
+                geometry = new THREE.CylinderGeometry(1.2, 1.4, 0.8, 32);
+            } else {
+                geometry = new THREE.IcosahedronGeometry(1.3, 1);
+            }
+
+            const material = new THREE.MeshPhongMaterial({
+                color: 0x06b6d4,
+                wireframe: true,
+                shininess: 100
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
+            scene.add(mesh);
+
+            const light1 = new THREE.DirectionalLight(0xffffff, 1);
+            light1.position.set(5, 5, 5);
+            scene.add(light1);
+
+            const light2 = new THREE.AmbientLight(0x404040, 2);
+            scene.add(light2);
+
+            function animate3D() {
+                if (!is3DViewActive) return;
+                requestAnimationFrame(animate3D);
+                mesh.rotation.x += 0.01;
+                mesh.rotation.y += 0.01;
+                renderer.render(scene, camera);
+            }
+
+            animate3D();
+        }
+
+        // --- 7. Search & Background Three.js Particles ---
+
+        function handleSearch() {
+            filterGrid();
+            const val = document.getElementById('search-input').value;
+            const clearBtn = document.getElementById('clear-search');
+            if (val) clearBtn.classList.remove('hidden');
+            else clearBtn.classList.add('hidden');
+        }
+
+        function handleMobileSearch() {
+            filterGrid();
+        }
+
+        function clearSearch() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('mobile-search-input').value = '';
+            document.getElementById('clear-search').classList.add('hidden');
+            filterGrid();
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        // Global Background Three.js Nodes Scene
+        function initGlobalBackground3D() {
+            const container = document.getElementById('bg-canvas');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 25;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            const particlesGeo = new THREE.BufferGeometry();
+            const count = 120;
+            const posArray = new Float32Array(count * 3);
+
+            for (let i = 0; i < count * 3; i++) {
+                posArray[i] = (Math.random() - 0.5) * 60;
+            }
+
+            particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+            const particlesMat = new THREE.PointsMaterial({
+                size: 0.15,
+                color: 0x06b6d4,
+                transparent: true,
+                opacity: 0.6
+            });
+
+            const particlesMesh = new THREE.Points(particlesGeo, particlesMat);
+            scene.add(particlesMesh);
+
+            function animateBg() {
+                requestAnimationFrame(animateBg);
+                particlesMesh.rotation.y += 0.001;
+                particlesMesh.rotation.x += 0.0005;
+                renderer.render(scene, camera);
+            }
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            animateBg();
+        }
+
+        // Initialize Store on Page Load
+        window.onload = function() {
+            renderStore();
+            updateCartUI();
+            initGlobalBackground3D();
+        };
+
+    </script>
+</body>
+</html>
